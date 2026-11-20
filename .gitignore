@@ -1,0 +1,7 @@
+plugin/build/
+*.vpp
+*.vpp.bak_*
+vp_server.json
+.vp_lab2_server.json
+vp_lab2.log
+.DS_Store

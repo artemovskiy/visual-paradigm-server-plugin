@@ -1,0 +1,41 @@
+#!/bin/bash
+# CLI for the Lab2 plugin's local server inside Visual Paradigm (see Server.java).
+#   vp status | diagrams | save | open FILE.vpp
+#   vp revert                    re-open the file, answering "No" to "save?" (drops unsaved changes)
+#   vp dialogs | click BUTTON [TEXT]   list open dialogs / press a button in the one containing TEXT
+#   vp show "Diagram"            open a diagram tab          ("Parent/Diagram" to disambiguate)
+#   vp inspect ["Diagram"]       shapes as JSON (active diagram if omitted)
+#   vp export "Diagram" OUT.png  render a diagram to PNG (no screen capture needed)
+#   vp run FILE.java [--nosrc]   compile+run `public static Object run(B b)` inside VP; by default compiled
+#                                together with ../plugin/src so edits of Seq/B/Stage* apply without reinstalling
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+CONF="${VP_SERVER_CONF:-$HOME/.vp_lab2_server.json}"   # written by the plugin at VP start
+[ -f "$CONF" ] || { echo "no vp_server.json: is VP running with the plugin?" >&2; exit 2; }
+PORT=$(sed -n 's/.*"port": *\([0-9]*\).*/\1/p' "$CONF")
+TOKEN=$(sed -n 's/.*"token": *"\([0-9a-f]*\)".*/\1/p' "$CONF")
+URL="http://127.0.0.1:$PORT"
+enc() { python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))' "$1"; }
+req() { curl -sS --max-time 600 -H "X-Token: $TOKEN" "$@"; echo; }
+
+cmd="${1:-status}"; shift || true
+case "$cmd" in
+  status|diagrams|save|revert|dialogs) req -X POST "$URL/$cmd" ;;
+  click)   req -X POST "$URL/click?button=$(enc "$1")&text=$(enc "${2:-}")" ;;
+  open)    req -X POST "$URL/open?path=$(enc "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")")" ;;
+  show)    req -X POST "$URL/show?diagram=$(enc "$1")" ;;
+  inspect) req "$URL/inspect?diagram=$(enc "${1:-}")" ;;
+  export)  out="$2"; case "$out" in /*) ;; *) out="$PWD/$out";; esac
+           req "$URL/export?diagram=$(enc "$1")&out=$(enc "$out")" ;;
+  run)     f="$1"; src="$HERE/../plugin/src"; [ "${2:-}" = "--nosrc" ] && src=""
+           out=$(curl -sS --max-time 600 -H "X-Token: $TOKEN" -H "X-Src: $src" --data-binary @"$f" "$URL/run")
+           python3 -c '
+import json,sys
+r=json.loads(sys.stdin.read())
+for k in ("ok","stage","compileMs","runMs","files","result"):
+    if r.get(k) is not None: print(f"{k}: {r[k]}")
+for k in ("log","stdout","error"):
+    if r.get(k): print(f"--- {k}\n{r[k].rstrip()}")
+sys.exit(0 if r.get("ok") else 1)' <<<"$out" ;;
+  *) sed -n '2,9p' "$0"; exit 2 ;;
+esac

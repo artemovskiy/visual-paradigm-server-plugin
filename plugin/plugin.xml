@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="ru.urfu.lab2" name="Lab2 Builder" description="UML model builder for lab 2" provider="lab2" class="ru.urfu.lab2.Lab2Plugin">
+  <runtime>
+    <library path="lib/lab2.jar" relative="true"/>
+  </runtime>
+  <actionSets>
+    <actionSet id="ru.urfu.lab2.actions">
+      <action id="ru.urfu.lab2.stage1" actionType="generalAction" label="Lab2: 1 Requirements" tooltip="Exercises 3.1-3.4: use cases and activity diagrams" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.Stage1Action"/>
+      </action>
+      <action id="ru.urfu.lab2.redrawmain" actionType="generalAction" label="Lab2: 1b Redraw Main" tooltip="Delete and redraw the Main use case diagram" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.RedrawMainAction"/>
+      </action>
+      <action id="ru.urfu.lab2.gens" actionType="generalAction" label="Lab2: 1c Generalizations" tooltip="Add generalizations to Main" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.GeneralizationsAction"/>
+      </action>
+      <action id="ru.urfu.lab2.stage2" actionType="generalAction" label="Lab2: 2 Analysis classes" tooltip="Exercises 4.1-4.4: realizations, Key Abstractions, analysis classes, VOPC" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.Stage2Action"/>
+      </action>
+      <action id="ru.urfu.lab2.stage2seq" actionType="generalAction" label="Lab2: 2b Sequences" tooltip="Sequence diagrams for exercises 4.2-4.4" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.Stage2SeqAction"/>
+      </action>
+      <action id="ru.urfu.lab2.inspect" actionType="generalAction" label="Lab2: Inspect" tooltip="Dump the active diagram structure to vp_lab2.log" style="normal" menuPath="Tools">
+        <actionController class="ru.urfu.lab2.InspectAction"/>
+      </action>
+    </actionSet>
+  </actionSets>
+</plugin>
